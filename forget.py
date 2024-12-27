@@ -80,8 +80,8 @@ def main(cfg):
         warmup_steps=max(1, steps_per_epoch),
         max_steps=max_steps,
         learning_rate=lr,
-        bf16=False,
-        bf16_full_eval=False,
+        bf16=True,
+        bf16_full_eval=True,
         logging_steps=max(1,max_steps//20),
         logging_dir=f'{cfg.save_dir}/logs',
         output_dir=cfg.save_dir,
@@ -101,11 +101,11 @@ def main(cfg):
     import re
     path_found = False
     for file in os.listdir(cfg.model_path):
-        if re.search("pytorch.*\.bin", file):
+        if re.search(r"pytorch.*\.bin", file):
             path_found = True
             break
         
-        if re.search("model-*\.safetensors", file):
+        if re.search(r"model-.*\.safetensors", file):
             path_found = True
             break
 
@@ -137,7 +137,9 @@ def main(cfg):
         data_collator=custom_data_collator,
         forget_loss = cfg.forget_loss,
         save_step_pattern=cfg.save_step_pattern,
-        save_dir=cfg.save_dir
+        save_dir=cfg.save_dir,
+        # disable bf16
+        
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
     
@@ -145,7 +147,7 @@ def main(cfg):
     if cfg.forget_loss == "npo":
         outputs_f_ref_dir = f"{cfg.save_dir}/outputs_f_ref.pt"
         if not os.path.exists(outputs_f_ref_dir):
-            ref_model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=False, torch_dtype=torch.float16, token=os.environ['HF_TOKEN'], trust_remote_code = True)
+            ref_model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=False, torch_dtype=torch.bfloat16, token=os.environ['HF_TOKEN'], trust_remote_code = True)
             ref_model.eval()
             ref_model = trainer.e_prepare_deepspeed(ref_model)
             with torch.no_grad():
