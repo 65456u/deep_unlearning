@@ -93,6 +93,7 @@ def main(cfg):
         eval_steps = 1,
         evaluation_strategy = "steps",
         seed=cfg.seed,
+        num_gpus = 8
     )
     
     
