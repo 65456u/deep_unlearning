@@ -80,8 +80,8 @@ def main(cfg):
         warmup_steps=max(1, steps_per_epoch),
         max_steps=max_steps,
         learning_rate=lr,
-        bf16=True,
-        bf16_full_eval=True,
+        bf16=False,
+        bf16_full_eval=False,
         logging_steps=max(1,max_steps//20),
         logging_dir=f'{cfg.save_dir}/logs',
         output_dir=cfg.save_dir,
@@ -114,7 +114,7 @@ def main(cfg):
         config = AutoConfig.from_pretrained(model_id)
 
         print("Loading from checkpoint")
-        model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, token=os.environ['HF_TOKEN'], trust_remote_code = True)
+        model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=False, torch_dtype=torch.float16, token=os.environ['HF_TOKEN'], trust_remote_code = True)
     else:
         print("checkpoint not found")
         exit()
@@ -145,7 +145,7 @@ def main(cfg):
     if cfg.forget_loss == "npo":
         outputs_f_ref_dir = f"{cfg.save_dir}/outputs_f_ref.pt"
         if not os.path.exists(outputs_f_ref_dir):
-            ref_model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, token=os.environ['HF_TOKEN'], trust_remote_code = True)
+            ref_model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=False, torch_dtype=torch.float16, token=os.environ['HF_TOKEN'], trust_remote_code = True)
             ref_model.eval()
             ref_model = trainer.e_prepare_deepspeed(ref_model)
             with torch.no_grad():
