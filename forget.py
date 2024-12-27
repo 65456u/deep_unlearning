@@ -93,7 +93,6 @@ def main(cfg):
         eval_steps = 1,
         evaluation_strategy = "steps",
         seed=cfg.seed,
-        num_gpus = 8
     )
     
     
@@ -139,6 +138,7 @@ def main(cfg):
         forget_loss = cfg.forget_loss,
         save_step_pattern=cfg.save_step_pattern,
         save_dir=cfg.save_dir,
+        num_devices = 8
         # disable bf16
         
     )
