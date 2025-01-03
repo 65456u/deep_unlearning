@@ -80,6 +80,9 @@ class FamilyForgetDataset(Dataset):
                 torch.stack(label_list).squeeze(),\
                 torch.stack(pad_attention_mask_list).squeeze(),\
                 torch.tensor(indices)
+    def to_csv(self, output_path: str = 'family_forget_dataset.csv'):
+        df = self.data.to_pandas()
+        df.to_csv(output_path, index=False)
     
 def custom_data_collator(samples):
     input_ids = [s[0] for s in samples]
