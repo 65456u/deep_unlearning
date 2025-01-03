@@ -56,7 +56,7 @@ def main(cfg):
     subsample = torch.load(cfg.subsample_path)
     shuffled_unlearn_data_id = int(subsample[cfg.unlearn_data_id])
     torch_format_dataset = FamilyForgetDataset(cfg.data_path, tokenizer=tokenizer, model_configs=model_cfg, max_length=500, unlearn_data_id=shuffled_unlearn_data_id, question_key='question4', answer_key='answer4')
-    
+    torch_format_dataset.to_csv()
     if cfg.forget_loss == "ga":
         lr = float(model_cfg["ga_lr"])
         num_epochs = model_cfg["ga_num_epochs"]
