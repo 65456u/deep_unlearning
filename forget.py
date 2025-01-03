@@ -138,8 +138,6 @@ def main(cfg):
         forget_loss = cfg.forget_loss,
         save_step_pattern=cfg.save_step_pattern,
         save_dir=cfg.save_dir,
-        num_devices = 8
-        # disable bf16
         
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
