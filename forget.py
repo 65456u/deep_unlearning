@@ -105,14 +105,14 @@ def main(cfg):
     # 判断本地是否存在 checkpoint
     import re
     path_found = False
-    for file in os.listdir(cfg.model_path):
-        if re.search(r"pytorch.*\.bin", file):
-            path_found = True
-            break
+    # for file in os.listdir(cfg.model_path):
+    #     if re.search(r"pytorch.*\.bin", file):
+    #         path_found = True
+    #         break
         
-        if re.search(r"model-.*\.safetensors", file):
-            path_found = True
-            break
+    #     if re.search(r"model-.*\.safetensors", file):
+    #         path_found = True
+    #         break
 
     if path_found:
         config = AutoConfig.from_pretrained(model_id)
