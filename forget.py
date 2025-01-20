@@ -13,7 +13,7 @@ import numpy as np
 from data_module import FamilyForgetDataset, custom_data_collator
 from unlearn_trainer import CustomFamilyTrainerForgetting
 from utils import get_model_identifiers_from_yaml
-
+from common_dataset import CommonDataset
 def print_trainable_parameters(model):
     """
     Prints the number of trainable parameters in the model.
@@ -53,9 +53,11 @@ def main(cfg):
     tokenizer.pad_token = tokenizer.eos_token
 
     #get the the unlearn_data_i in shuffled id
-    subsample = torch.load(cfg.subsample_path)
-    shuffled_unlearn_data_id = int(subsample[cfg.unlearn_data_id])
-    torch_format_dataset = FamilyForgetDataset(cfg.data_path, tokenizer=tokenizer, model_configs=model_cfg, max_length=500, unlearn_data_id=shuffled_unlearn_data_id, question_key='question4', answer_key='answer4')
+    # subsample = torch.load(cfg.subsample_path)
+    # shuffled_unlearn_data_id = int(subsample[cfg.unlearn_data_id])
+    # torch_format_dataset = FamilyForgetDataset(cfg.data_path, tokenizer=tokenizer, model_configs=model_cfg, max_length=500, unlearn_data_id=shuffled_unlearn_data_id, question_key='question4', answer_key='answer4')
+    torch_format_dataset = CommonDataset(cfg.data_path, tokenizer=tokenizer, model_configs=model_cfg, max_length=500, question_key='single_hop_question', answer_key='single_hop_question')
+    
     torch_format_dataset.to_csv()
     if cfg.forget_loss == "ga":
         lr = float(model_cfg["ga_lr"])

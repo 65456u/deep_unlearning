@@ -1,0 +1,28 @@
+{
+  "citation": "",
+  "description": "",
+  "features": {
+    "unlearning_target_id": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "case_from": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "unlearning_target": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "single_hop_question": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "single_hop_answer": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": ""
+}
