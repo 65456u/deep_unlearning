@@ -14,6 +14,7 @@ from data_module import FamilyForgetDataset, custom_data_collator
 from unlearn_trainer import CustomFamilyTrainerForgetting
 from utils import get_model_identifiers_from_yaml
 from common_dataset import CommonDataset
+
 def print_trainable_parameters(model):
     """
     Prints the number of trainable parameters in the model.
@@ -52,29 +53,33 @@ def main(cfg):
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     tokenizer.pad_token = tokenizer.eos_token
 
-    #get the the unlearn_data_i in shuffled id
-    # subsample = torch.load(cfg.subsample_path)
-    # shuffled_unlearn_data_id = int(subsample[cfg.unlearn_data_id])
-    # torch_format_dataset = FamilyForgetDataset(cfg.data_path, tokenizer=tokenizer, model_configs=model_cfg, max_length=500, unlearn_data_id=shuffled_unlearn_data_id, question_key='question4', answer_key='answer4')
-    torch_format_dataset = CommonDataset(cfg.data_path, tokenizer=tokenizer, model_configs=model_cfg, max_length=500, question_key='single_hop_question', answer_key='single_hop_question')
-    
+    # 使用 CommonDataset 代替 FamilyForgetDataset
+    torch_format_dataset = CommonDataset(
+        cfg.data_path,
+        tokenizer=tokenizer,
+        model_configs=model_cfg,
+        max_length=500,
+        question_key='single_hop_question',
+        answer_key='single_hop_question'
+    )
+
     torch_format_dataset.to_csv()
+
+    # 设置学习率和训练周期
     if cfg.forget_loss == "ga":
         lr = float(model_cfg["ga_lr"])
         num_epochs = model_cfg["ga_num_epochs"]
     elif cfg.forget_loss == "npo":
         lr = float(model_cfg["npo_lr"])
         num_epochs = model_cfg["npo_num_epochs"]
-    
-    
+
     batch_size = cfg.batch_size
     gradient_accumulation_steps = cfg.gradient_accumulation_steps
-    steps_per_epoch = len(torch_format_dataset)//(batch_size*gradient_accumulation_steps*num_devices)
-    max_steps = int(num_epochs*len(torch_format_dataset))//(batch_size*gradient_accumulation_steps*num_devices)
+    steps_per_epoch = len(torch_format_dataset) // (batch_size * gradient_accumulation_steps * num_devices)
+    max_steps = int(num_epochs * len(torch_format_dataset)) // (batch_size * gradient_accumulation_steps * num_devices)
     print(f"max_steps: {max_steps}")
     print(f"steps_per_epoch: {steps_per_epoch}")
-    
-    
+
     training_args = transformers.TrainingArguments(
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
@@ -84,22 +89,20 @@ def main(cfg):
         learning_rate=lr,
         bf16=True,
         bf16_full_eval=True,
-        logging_steps=max(1,max_steps//20),
+        logging_steps=max(1, max_steps // 20),
         logging_dir=f'{cfg.save_dir}/logs',
         output_dir=cfg.save_dir,
         optim="paged_adamw_32bit",
         save_strategy="no",
-        ddp_find_unused_parameters= False,
+        ddp_find_unused_parameters=False,
         deepspeed='config/ds_config.json',
-        weight_decay = cfg.weight_decay,
-        eval_steps = 1,
-        evaluation_strategy = "steps",
+        weight_decay=cfg.weight_decay,
+        eval_steps=1,
+        evaluation_strategy="steps",
         seed=cfg.seed,
     )
-    
-    
-    #first get the base model architectur2e
-    #if there is a pytorch*.bin file in the model path, then load that. use regex there can be anythign in between pytorch and .bin
+
+    # 判断本地是否存在 checkpoint
     import re
     path_found = False
     for file in os.listdir(cfg.model_path):
@@ -111,25 +114,40 @@ def main(cfg):
             path_found = True
             break
 
-
     if path_found:
         config = AutoConfig.from_pretrained(model_id)
 
-        print("Loading from checkpoint")
-        model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=False, torch_dtype=torch.float16, token=os.environ['HF_TOKEN'], trust_remote_code = True)
+        print("Loading from local checkpoint")
+        model = AutoModelForCausalLM.from_pretrained(
+            cfg.model_path,
+            config=config,
+            use_flash_attention_2=False,
+            torch_dtype=torch.float16,
+            token=os.environ['HF_TOKEN'],
+            trust_remote_code=True
+        )
     else:
-        print("checkpoint not found")
-        exit()
-    
-    
+        print("Local checkpoint not found. Loading from remote.")
+        # 从远程加载模型
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            config=model_cfg.get("config", None),  # 如果需要，可以从配置中获取额外参数
+            use_flash_attention_2=False,
+            torch_dtype=torch.float16,
+            token=os.environ.get('HF_TOKEN'),  # 确保环境变量中存在 HF_TOKEN
+            trust_remote_code=True
+        )
+        # 如果需要，可以将远程模型保存到本地
+        # model.save_pretrained(cfg.model_path)
+        # tokenizer.save_pretrained(cfg.model_path)
+
     # Hot fix for https://discuss.huggingface.co/t/help-with-llama-2-finetuning-setup/50035
     model.generation_config.do_sample = True
-    
-    #now we have a HuggingFace model 
-    if model_cfg["gradient_checkpointing"] == "true":
+
+    # 启用梯度检查点（如果配置）
+    if model_cfg.get("gradient_checkpointing", "false").lower() == "true":
         model.gradient_checkpointing_enable()
 
-        
     trainer = CustomFamilyTrainerForgetting(
         model=model,
         tokenizer=tokenizer,
@@ -137,24 +155,31 @@ def main(cfg):
         compute_metrics=None,
         args=training_args,
         data_collator=custom_data_collator,
-        forget_loss = cfg.forget_loss,
+        forget_loss=cfg.forget_loss,
         save_step_pattern=cfg.save_step_pattern,
         save_dir=cfg.save_dir,
-        
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
-    
-    
+
     if cfg.forget_loss == "npo":
         outputs_f_ref_dir = f"{cfg.save_dir}/outputs_f_ref.pt"
         if not os.path.exists(outputs_f_ref_dir):
-            ref_model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=False, torch_dtype=torch.bfloat16, token=os.environ['HF_TOKEN'], trust_remote_code = True)
+            ref_model = AutoModelForCausalLM.from_pretrained(
+                cfg.model_path,
+                config=config,
+                use_flash_attention_2=False,
+                torch_dtype=torch.bfloat16,
+                token=os.environ['HF_TOKEN'],
+                trust_remote_code=True
+            )
             ref_model.eval()
             ref_model = trainer.e_prepare_deepspeed(ref_model)
             with torch.no_grad():
                 inputs = trainer.train_dataset[0]
                 input_ids, labels, attention_mask = inputs[0], inputs[1], inputs[2]
-                input_ids, labels, attention_mask = input_ids.unsqueeze(0).to(local_rank), labels.unsqueeze(0).to(local_rank), attention_mask.unsqueeze(0).to(local_rank)
+                input_ids = input_ids.unsqueeze(0).to(local_rank)
+                labels = labels.unsqueeze(0).to(local_rank)
+                attention_mask = attention_mask.unsqueeze(0).to(local_rank)
                 outputs_f_ref = ref_model(input_ids, labels=labels, attention_mask=attention_mask)
             ref_model.destroy()
             del ref_model
@@ -163,21 +188,16 @@ def main(cfg):
             torch.save(outputs_f_ref, outputs_f_ref_dir)
             exit()
         trainer.outputs_f_ref_logits = torch.load(outputs_f_ref_dir).logits.to(local_rank)
-#         trainer.outputs_f_ref.logits = trainer.outputs_f_ref.logits.to(local_rank)
-        
-    # trainer.train()
+    
+    # 开始训练
     trainer.train()
 
-    #delete all "global_step*" files in the save_dir/checkpoint-*/ directories
+    # 删除所有 "global_step*" 文件夹
     if local_rank == 0:
         for file in Path(cfg.save_dir).glob("checkpoint-*"):
             for global_step_dir in file.glob("global_step*"):
-                #delete the directory
                 import shutil
                 shutil.rmtree(global_step_dir)
 
-
-
 if __name__ == "__main__":
     main()
-
