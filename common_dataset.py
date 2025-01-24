@@ -4,7 +4,7 @@ import datasets
 from utils import get_model_identifiers_from_yaml, add_dataset_index
 import os
 
-def convert_raw_data_to_model_format(tokenizer, max_length, question, answer, model_configs):
+def convert_raw_data_to_model_format(tokenizer, max_length, question, answer, model_configs, unlearning_target):
     question_start_token = model_configs.get('question_start_tag', "<Q>")
     question_end_token = model_configs.get('question_end_tag', "</Q>")
     answer_token = model_configs.get('answer_tag', "<A>")
@@ -14,7 +14,7 @@ def convert_raw_data_to_model_format(tokenizer, max_length, question, answer, mo
     full_text = new_question + new_answer
     num_question_tokens = len(tokenizer.tokenize(new_question, add_special_tokens=True))
     
-    # full_text = answer
+    full_text = unlearning_target
     print('FULL TEXT:',full_text)
     
     encoded = tokenizer(
@@ -81,6 +81,7 @@ class CommonDataset(Dataset):
         print(sample)
         question = sample[self.qk]
         answer = sample[self.ak]
+        unlearning_target = sample['unlearning_target']
         # indices = sample.get('index', idx)  # 如果没有 'index' 字段，使用 idx 作为索引
         indices = [idx]
 
@@ -108,7 +109,8 @@ class CommonDataset(Dataset):
             self.max_length, 
             question=question, 
             answer=answer, 
-            model_configs=self.model_configs
+            model_configs=self.model_configs,
+            unlearning_target=unlearning_target
         )
         pad_input_ids_list.append(converted_data[0])
         label_list.append(converted_data[1])
