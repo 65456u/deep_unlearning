@@ -44,8 +44,9 @@ def main(cfg):
     os.environ["WANDB_DISABLED"] = "true"
     model_cfg = get_model_identifiers_from_yaml(cfg.model_family)
     model_id = model_cfg["model_id"]
-    if cfg.model_path is None:
-        cfg.model_path = model_cfg["ft_model_path"]
+    # if cfg.model_path is None:
+    #     cfg.model_path = model_cfg["ft_model_path"]
+    cfg.model_path = 'meta-llama/Meta-Llama-3-8B'
 
     print("######################")
     print("Saving to: ", cfg.save_dir)
