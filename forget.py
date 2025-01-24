@@ -46,7 +46,7 @@ def main(cfg):
     model_id = model_cfg["model_id"]
     # if cfg.model_path is None:
     #     cfg.model_path = model_cfg["ft_model_path"]
-    cfg.model_path = 'meta-llama/Meta-Llama-3-8B'
+    cfg.model_path = 'meta-llama/Llama-3.1-8B'
 
     print("######################")
     print("Saving to: ", cfg.save_dir)
