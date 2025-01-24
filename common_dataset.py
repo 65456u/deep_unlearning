@@ -14,8 +14,8 @@ def convert_raw_data_to_model_format(tokenizer, max_length, question, answer, mo
     full_text = new_question + new_answer
     num_question_tokens = len(tokenizer.tokenize(new_question, add_special_tokens=True))
     
-    full_text = answer
-    print('FULL TEXT:',full_text)
+    # full_text = answer
+    # print('FULL TEXT:',full_text)
     
     encoded = tokenizer(
         full_text, 
