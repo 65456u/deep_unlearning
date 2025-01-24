@@ -91,7 +91,7 @@ def main(cfg):
         gradient_accumulation_steps=gradient_accumulation_steps,
         warmup_steps=max(1, steps_per_epoch),
         # max_steps=max_steps,
-        num_train_epochs=num_epochs,
+        num_train_epochs=32,
         learning_rate=lr,
         bf16=True,
         bf16_full_eval=True,
