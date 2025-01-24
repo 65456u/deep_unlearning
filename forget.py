@@ -31,8 +31,7 @@ def print_trainable_parameters(model):
 
 @hydra.main(version_base=None, config_path="config", config_name="forget")
 def main(cfg):
-    print(cfg.data_path)
-    exit()
+    cfg.data_path = 'data/mhu_01_forget_dict.pt'
     num_devices = int(os.environ.get('WORLD_SIZE', 1))
     print(f"num_devices: {num_devices}")
 
