@@ -82,7 +82,6 @@ def main(cfg):
     max_steps = int(num_epochs * len(torch_format_dataset)) // (batch_size * gradient_accumulation_steps * num_devices)
     print(f"max_steps: {max_steps}")
     print(f"steps_per_epoch: {steps_per_epoch}")
-    exit()
 
     training_args = transformers.TrainingArguments(
         per_device_train_batch_size=batch_size,
@@ -193,7 +192,7 @@ def main(cfg):
             torch.save(outputs_f_ref, outputs_f_ref_dir)
             exit()
         trainer.outputs_f_ref_logits = torch.load(outputs_f_ref_dir).logits.to(local_rank)
-    
+    exit()
     # 开始训练
     trainer.train()
 
