@@ -76,7 +76,8 @@ def main(cfg):
         lr = float(model_cfg["npo_lr"])
         num_epochs = model_cfg["npo_num_epochs"]
 
-    batch_size = cfg.batch_size
+    # batch_size = cfg.batch_size
+    batch_size = 35
     gradient_accumulation_steps = cfg.gradient_accumulation_steps
     steps_per_epoch = len(torch_format_dataset) // (batch_size * gradient_accumulation_steps * num_devices)
     max_steps = int(num_epochs * len(torch_format_dataset)) // (batch_size * gradient_accumulation_steps * num_devices)
@@ -89,7 +90,7 @@ def main(cfg):
         per_device_eval_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
         warmup_steps=max(1, steps_per_epoch),
-        max_steps=max_steps,
+        # max_steps=max_steps,
         num_train_epochs=num_epochs,
         learning_rate=lr,
         bf16=True,
