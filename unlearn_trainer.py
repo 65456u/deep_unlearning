@@ -44,7 +44,6 @@ class CustomFamilyTrainerForgetting(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False):
         if self.loss_type == "ga":
             forget_inputs = inputs
-            print(forget_inputs)
             input_ids, labels, attention_mask = inputs
             outputs = model(input_ids,labels=labels, attention_mask=attention_mask)
             forget_loss = outputs.loss
