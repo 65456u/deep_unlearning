@@ -77,7 +77,7 @@ def main(cfg):
         num_epochs = model_cfg["npo_num_epochs"]
 
     # batch_size = cfg.batch_size
-    batch_size = 16
+    batch_size = 4
     gradient_accumulation_steps = cfg.gradient_accumulation_steps
     steps_per_epoch = len(torch_format_dataset) // (batch_size * gradient_accumulation_steps * num_devices)
     max_steps = int(num_epochs * len(torch_format_dataset)) // (batch_size * gradient_accumulation_steps * num_devices)
@@ -95,7 +95,8 @@ def main(cfg):
         learning_rate=lr,
         bf16=True,
         bf16_full_eval=True,
-        logging_steps=max(1, max_steps // 20),
+        # logging_steps=max(1, max_steps // 20),
+        logging_steps=1,
         logging_dir=f'{cfg.save_dir}/logs',
         output_dir=cfg.save_dir,
         optim="paged_adamw_32bit",
