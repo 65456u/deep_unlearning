@@ -83,8 +83,8 @@ class CommonDataset(Dataset):
         # indices = sample.get('index', idx)  # 如果没有 'index' 字段，使用 idx 作为索引
         indices = [idx]
 
-        if isinstance(answers, str):
-            answers = [answers]
+        # if isinstance(answers, str):
+        #     answers = [answers]
 
         pad_input_ids_list = []
         label_list = []
