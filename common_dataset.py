@@ -15,7 +15,7 @@ def convert_raw_data_to_model_format(tokenizer, max_length, question, answer, mo
     num_question_tokens = len(tokenizer.tokenize(new_question, add_special_tokens=True))
     
     full_text = answer
-    print(full_text)
+    print('FULL TEXT:',full_text)
     
     encoded = tokenizer(
         full_text, 
@@ -79,8 +79,9 @@ class CommonDataset(Dataset):
         """
         sample = self.data[idx]
         question = sample[self.qk]
-        answers = sample[self.ak]
-        indices = sample.get('index', idx)  # 如果没有 'index' 字段，使用 idx 作为索引
+        answer = sample[self.ak]
+        # indices = sample.get('index', idx)  # 如果没有 'index' 字段，使用 idx 作为索引
+        indices = [idx]
 
         if isinstance(answers, str):
             answers = [answers]
@@ -89,17 +90,29 @@ class CommonDataset(Dataset):
         label_list = []
         pad_attention_mask_list = []
 
-        for answer in answers:
-            converted_data = convert_raw_data_to_model_format(
-                self.tokenizer, 
-                self.max_length, 
-                question, 
-                answer, 
-                self.model_configs
-            )
-            pad_input_ids_list.append(converted_data[0])
-            label_list.append(converted_data[1])
-            pad_attention_mask_list.append(converted_data[2])
+        # for answer in answers:
+        #     converted_data = convert_raw_data_to_model_format(
+        #         self.tokenizer, 
+        #         self.max_length, 
+        #         question=question, 
+        #         answer=answer, 
+        #         model_configs=self.model_configs
+        #     )
+        #     pad_input_ids_list.append(converted_data[0])
+        #     label_list.append(converted_data[1])
+        #     pad_attention_mask_list.append(converted_data[2])
+        
+        converted_data = convert_raw_data_to_model_format(
+            self.tokenizer, 
+            self.max_length, 
+            question=question, 
+            answer=answer, 
+            model_configs=self.model_configs
+        )
+        pad_input_ids_list.append(converted_data[0])
+        label_list.append(converted_data[1])
+        pad_attention_mask_list.append(converted_data[2])
+            
 
         # 将列表中的张量堆叠，并去除单维度
         input_ids = torch.stack(pad_input_ids_list).squeeze()
