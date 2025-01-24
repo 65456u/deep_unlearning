@@ -34,7 +34,7 @@ llama3.1-8b:
   answer_tag: "Answer: "
   flash_attention2: "true"
   gradient_checkpointing: "true"
-  ga_lr: "1e-6"
+  ga_lr: "1e-5"
   ga_num_epochs: 2
   npo_lr: "2e-5"
   npo_num_epochs: 16
