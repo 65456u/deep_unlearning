@@ -78,7 +78,6 @@ class CommonDataset(Dataset):
             tuple: 包含 `input_ids`、`labels`、`attention_mask` 和 `index` 的元组。
         """
         sample = self.data[idx]
-        print(sample)
         question = sample[self.qk]
         answer = sample[self.ak]
         unlearning_target = sample['unlearning_target']
