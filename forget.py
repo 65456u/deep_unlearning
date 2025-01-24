@@ -130,6 +130,7 @@ def main(cfg):
     else:
         print("Local checkpoint not found. Loading from remote.")
         # 从远程加载模型
+        config = AutoConfig.from_pretrained(model_id)
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             config=model_cfg.get("config", None),  # 如果需要，可以从配置中获取额外参数
