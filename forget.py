@@ -82,13 +82,14 @@ def main(cfg):
     max_steps = int(num_epochs * len(torch_format_dataset)) // (batch_size * gradient_accumulation_steps * num_devices)
     print(f"max_steps: {max_steps}")
     print(f"steps_per_epoch: {steps_per_epoch}")
-
+    max_steps = 1000
+    print(f"max_steps: {max_steps}")
     training_args = transformers.TrainingArguments(
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
         warmup_steps=max(1, steps_per_epoch),
-        # max_steps=max_steps,
+        max_steps=max_steps,
         learning_rate=lr,
         bf16=True,
         bf16_full_eval=True,
@@ -104,6 +105,7 @@ def main(cfg):
         evaluation_strategy="steps",
         seed=cfg.seed,
     )
+    print(f"Training arguments: {training_args}")
 
     # 判断本地是否存在 checkpoint
     import re
