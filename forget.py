@@ -63,7 +63,7 @@ def main(cfg):
         model_configs=model_cfg,
         max_length=500,
         question_key='single_hop_question',
-        answer_key='single_hop_question'
+        answer_key='single_hop_answer'
     )
 
     torch_format_dataset.to_csv()
