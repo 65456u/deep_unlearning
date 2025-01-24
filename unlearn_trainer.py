@@ -44,6 +44,7 @@ class CustomFamilyTrainerForgetting(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False):
         if self.loss_type == "ga":
             forget_inputs = inputs
+            print(forget_inputs)
             input_ids, labels, attention_mask = inputs
             outputs = model(input_ids,labels=labels, attention_mask=attention_mask)
             forget_loss = outputs.loss
@@ -82,6 +83,8 @@ class CustomFamilyTrainerForgetting(Trainer):
             import math
             if curr_step not in [1, 2, 4, 8, 16, 32]: 
                 return
+        
+        print(f"Saving model at step {curr_step}")
 
         curr_save_dir = os.path.join(self.save_dir, f"checkpoint-{curr_step}")
         self.save_model(curr_save_dir)
