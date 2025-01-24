@@ -88,7 +88,7 @@ def main(cfg):
         per_device_eval_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
         warmup_steps=max(1, steps_per_epoch),
-        max_steps=max_steps,
+        # max_steps=max_steps,
         learning_rate=lr,
         bf16=True,
         bf16_full_eval=True,
@@ -192,7 +192,6 @@ def main(cfg):
             torch.save(outputs_f_ref, outputs_f_ref_dir)
             exit()
         trainer.outputs_f_ref_logits = torch.load(outputs_f_ref_dir).logits.to(local_rank)
-    exit()
     # 开始训练
     trainer.train()
 
