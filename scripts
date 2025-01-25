@@ -1,0 +1,2 @@
+bolt task viewport q8qexg2t62 expert_ai --no-browser --use-remote-port-numbers
+vllm serve /mnt/task_runtime/deep_unlearning/unlearning_checkpoint/ga/llama3.1-8b-instruct/checkpoint-64 --dtype half --port $expert_ai --tensor-parallel 8 --enable-chunked-prefill=False
