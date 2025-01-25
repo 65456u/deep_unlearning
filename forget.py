@@ -77,7 +77,7 @@ def main(cfg):
         num_epochs = model_cfg["npo_num_epochs"]
 
     # batch_size = cfg.batch_size
-    batch_size = 4
+    batch_size = 2
     gradient_accumulation_steps = cfg.gradient_accumulation_steps
     steps_per_epoch = len(torch_format_dataset) // (batch_size * gradient_accumulation_steps * num_devices)
     max_steps = int(num_epochs * len(torch_format_dataset)) // (batch_size * gradient_accumulation_steps * num_devices)
