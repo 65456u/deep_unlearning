@@ -108,7 +108,7 @@ def main(cfg):
         evaluation_strategy="steps",
         seed=cfg.seed,
     )
-    print(f"Training arguments: {training_args}")
+    # print(f"Training arguments: {training_args}")
 
     # 判断本地是否存在 checkpoint
     import re
